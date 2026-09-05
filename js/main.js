@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const currentTypeSpan = document.getElementById('currentType');
 const colorPicker = document.getElementById('colorPicker');
 const clearBtn = document.getElementById('clearBtn');
+const backBtn = document.getElementById('backBtn');
 const skipBtn = document.getElementById('skipBtn');
 const continueBtn = document.getElementById('continueBtn');
 const downloadBtn = document.getElementById('downloadBtn');
@@ -16,9 +17,29 @@ let drawings = {};
 let currentTypeIndex = 0;
 let isDrawn = false;
 
-function initCanvas() {
+function drawDefaultCursorBackground() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.moveTo(2, 2);
+  ctx.lineTo(2, 20);
+  ctx.lineTo(6, 15);
+  ctx.lineTo(10, 25);
+  ctx.lineTo(13, 23);
+  ctx.lineTo(9, 13);
+  ctx.lineTo(15, 13);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function initCanvas() {
+  drawDefaultCursorBackground();
+  isDrawn = false;
+  continueBtn.disabled = true;
 }
 
 function loadType(index) {
@@ -31,10 +52,13 @@ function loadType(index) {
   const type = cursorTypes[index];
   currentTypeSpan.textContent = type.name;
   initCanvas();
-  isDrawn = false;
-  continueBtn.disabled = true;
   stepButtons.classList.remove('hidden');
   downloadBtn.classList.add('hidden');
+  if (index > 0) {
+    backBtn.classList.remove('hidden');
+  } else {
+    backBtn.classList.add('hidden');
+  }
 }
 
 function nextType() {
@@ -75,8 +99,16 @@ canvas.addEventListener('mousemove', (e) => {
 
 clearBtn.addEventListener('click', () => {
   initCanvas();
-  isDrawn = false;
-  continueBtn.disabled = true;
+});
+
+backBtn.addEventListener('click', () => {
+  if (isDrawn) {
+    saveCurrent();
+  }
+  if (currentTypeIndex > 0) {
+    currentTypeIndex--;
+    loadType(currentTypeIndex);
+  }
 });
 
 skipBtn.addEventListener('click', nextType);
@@ -199,20 +231,16 @@ downloadBtn.addEventListener('click', async () => {
 
 donateBtn.addEventListener('click', () => {
   donateMenu.classList.toggle('show');
-  donateMenu.classList.toggle('hidden');
 });
 
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('dark');
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
-  const text = themeToggle.querySelector('.text');
   if (document.body.classList.contains('dark')) {
     icon.textContent = '🌙';
-    text.textContent = 'Dark';
   } else {
     icon.textContent = '☀️';
-    text.textContent = 'Light';
   }
 });
 
