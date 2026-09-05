@@ -1,49 +1,50 @@
 const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
-const cursorList = document.getElementById('cursorList');
 const currentTypeSpan = document.getElementById('currentType');
 const colorPicker = document.getElementById('colorPicker');
 const clearBtn = document.getElementById('clearBtn');
+const skipBtn = document.getElementById('skipBtn');
+const continueBtn = document.getElementById('continueBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const stepButtons = document.getElementById('stepButtons');
+const donateBtn = document.getElementById('donateBtn');
+const donateMenu = document.getElementById('donateMenu');
+const themeToggle = document.getElementById('themeToggle');
+const copyBtns = document.querySelectorAll('.copy-btn');
 
 let drawings = {};
-let activeType = 'normal';
+let currentTypeIndex = 0;
+let isDrawn = false;
 
 function initCanvas() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function renderCursorList() {
-  cursorTypes.forEach(type => {
-    const li = document.createElement('li');
-    li.textContent = type.name;
-    li.dataset.id = type.id;
-    li.addEventListener('click', () => selectType(type.id));
-    cursorList.appendChild(li);
-  });
-  selectType('normal');
-}
-
-function selectType(id) {
-  activeType = id;
-  document.querySelectorAll('#cursorList li').forEach(li => {
-    li.classList.toggle('active', li.dataset.id === id);
-  });
-  currentTypeSpan.textContent = cursorTypes.find(t => t.id === id).name;
-  loadDrawing(id);
-}
-
-function loadDrawing(id) {
-  if (drawings[id]) {
-    ctx.putImageData(drawings[id], 0, 0);
-  } else {
-    initCanvas();
+function loadType(index) {
+  if (index >= cursorTypes.length) {
+    stepButtons.classList.add('hidden');
+    downloadBtn.classList.remove('hidden');
+    currentTypeSpan.textContent = 'Done!';
+    return;
   }
+  const type = cursorTypes[index];
+  currentTypeSpan.textContent = type.name;
+  initCanvas();
+  isDrawn = false;
+  continueBtn.disabled = true;
+  stepButtons.classList.remove('hidden');
+  downloadBtn.classList.add('hidden');
 }
 
-function saveDrawing() {
-  drawings[activeType] = ctx.getImageData(0, 0, canvas.width, canvas.height);
+function nextType() {
+  currentTypeIndex++;
+  loadType(currentTypeIndex);
+}
+
+function saveCurrent() {
+  const currentType = cursorTypes[currentTypeIndex];
+  drawings[currentType.id] = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 canvas.addEventListener('mousedown', (e) => {
@@ -54,7 +55,8 @@ canvas.addEventListener('mousedown', (e) => {
   const y = Math.floor((e.clientY - rect.top) * scaleY);
   ctx.fillStyle = colorPicker.value;
   ctx.fillRect(x, y, 1, 1);
-  saveDrawing();
+  isDrawn = true;
+  continueBtn.disabled = false;
 });
 
 canvas.addEventListener('mousemove', (e) => {
@@ -66,13 +68,22 @@ canvas.addEventListener('mousemove', (e) => {
     const y = Math.floor((e.clientY - rect.top) * scaleY);
     ctx.fillStyle = colorPicker.value;
     ctx.fillRect(x, y, 1, 1);
-    saveDrawing();
+    isDrawn = true;
+    continueBtn.disabled = false;
   }
 });
 
 clearBtn.addEventListener('click', () => {
   initCanvas();
-  saveDrawing();
+  isDrawn = false;
+  continueBtn.disabled = true;
+});
+
+skipBtn.addEventListener('click', nextType);
+
+continueBtn.addEventListener('click', () => {
+  saveCurrent();
+  nextType();
 });
 
 function canvasToCur(imageData) {
@@ -128,31 +139,32 @@ function canvasToCur(imageData) {
   return buffer;
 }
 
-function generateInstallInf() {
+function generateInstallInf(selectedTypes) {
   let inf = `[Version]\nSignature = "$Chicago$"\n\n[DefaultInstall]\nCopyFiles = Scheme.Cur\nAddReg = Scheme.AddReg\n\n[DestinationDirs]\nScheme.Cur = 10,"Cursors\\LucCursor"\n\n[Scheme.Cur]\n`;
-  cursorTypes.forEach(type => {
+  selectedTypes.forEach(type => {
     inf += `${type.file}\n`;
   });
   inf += `\n[Scheme.AddReg]\nHKCU,"Control Panel\\Cursors\\Schemes","LucCursor",0x00020000,`;
-  const paths = cursorTypes.map(t => `%10%\\Cursors\\LucCursor\\${t.file}`).join(',');
+  const paths = selectedTypes.map(t => `%10%\\Cursors\\LucCursor\\${t.file}`).join(',');
   inf += `"${paths}"\n`;
   return inf;
 }
 
 downloadBtn.addEventListener('click', async () => {
+  const selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  if (selectedTypes.length === 0) {
+    alert('No cursors selected');
+    return;
+  }
   const zip = new JSZip();
   const cursorsFolder = zip.folder('cursors');
   
-  for (const type of cursorTypes) {
-    let imageData = drawings[type.id];
-    if (!imageData) {
-      imageData = ctx.createImageData(32, 32);
-    }
-    const curBuffer = canvasToCur(imageData);
+  for (const type of selectedTypes) {
+    const curBuffer = canvasToCur(drawings[type.id]);
     cursorsFolder.file(type.file, curBuffer);
   }
   
-  const installInf = generateInstallInf();
+  const installInf = generateInstallInf(selectedTypes);
   zip.file('install.inf', installInf);
 
   try {
@@ -174,5 +186,81 @@ downloadBtn.addEventListener('click', async () => {
   URL.revokeObjectURL(url);
 });
 
-initCanvas();
-renderCursorList();
+donateBtn.addEventListener('click', () => {
+  donateMenu.classList.toggle('hidden');
+});
+
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  document.body.classList.toggle('light');
+  themeToggle.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
+});
+
+copyBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.address).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = original, 1500);
+    });
+  });
+});
+
+loadType(0);
+function generateInstallInf(selectedTypes) {
+  let inf = `[Version]\nSignature = "$Chicago$"\n\n[DefaultInstall]\nCopyFiles = Scheme.Cur\nAddReg = Scheme.AddReg\n\n[DestinationDirs]\nScheme.Cur = 10,"Cursors\\LucCursor"\n\n[Scheme.Cur]\n`;
+  selectedTypes.forEach(type => {
+    inf += `${type.file}\n`;
+  });
+  inf += `\n[Scheme.AddReg]\nHKCU,"Control Panel\\Cursors","",0x00020000,`;
+  const paths = selectedTypes.map(t => `%10%\\Cursors\\LucCursor\\${t.file}`).join(',');
+  inf += `"${paths}"\n`;
+  return inf;
+}
+
+function generateInstallBat() {
+  let bat = `@echo off\n`;
+  bat += `rundll32 syssetup,SetupInfObjectInstallAction DefaultInstall 128 .\\install.inf\n`;
+  bat += `reg add "HKCU\\Control Panel\\Cursors" /v "" /d "LucCursor" /f\n`;
+  bat += `RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters\n`;
+  bat += `echo Cursors installed!\n`;
+  bat += `pause\n`;
+  return bat;
+}
+
+downloadBtn.addEventListener('click', async () => {
+  const selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  if (selectedTypes.length === 0) {
+    alert('No cursors selected');
+    return;
+  }
+  const zip = new JSZip();
+  const cursorsFolder = zip.folder('cursors');
+  
+  for (const type of selectedTypes) {
+    const curBuffer = canvasToCur(drawings[type.id]);
+    cursorsFolder.file(type.file, curBuffer);
+  }
+  
+  const installInf = generateInstallInf(selectedTypes);
+  zip.file('install.inf', installInf);
+  zip.file('install.bat', generateInstallBat());
+
+  try {
+    const response = await fetch('README.md');
+    if (response.ok) {
+      const readmeText = await response.text();
+      zip.file('README.md', readmeText);
+    }
+  } catch (e) {
+    console.log('README not found');
+  }
+  
+  const blob = await zip.generateAsync({type: 'blob'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'LucCursor.zip';
+  a.click();
+  URL.revokeObjectURL(url);
+});

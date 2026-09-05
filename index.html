@@ -17,23 +17,38 @@
   <meta name="twitter:description" content="Create custom Windows cursors right in your browser.">
   <meta name="twitter:image" content="https://lucovisa.github.io/luccursor/assets/gallery/preview.png">
 </head>
-<body>
+<body class="dark">
+  <button id="themeToggle" class="theme-toggle">🌙</button>
+  <button id="donateBtn" class="donate-btn">❤️ Donate</button>
+  <div id="donateMenu" class="donate-menu hidden">
+    <p>Please support an independent author</p>
+    <div class="wallet">
+      <span>ETH/USDT (ERC-20)</span>
+      <span class="address">0xFa78966938743C9168abFC2acD6D7751d7dA35Cf</span>
+      <button class="copy-btn" data-address="0xFa78966938743C9168abFC2acD6D7751d7dA35Cf">Copy</button>
+    </div>
+    <div class="wallet">
+      <span>BTC (Bitcoin mainnet)</span>
+      <span class="address">bc1q60tvcsw4guyhxa5e3n47eqmj0s3lpxzkxldpvp</span>
+      <button class="copy-btn" data-address="bc1q60tvcsw4guyhxa5e3n47eqmj0s3lpxzkxldpvp">Copy</button>
+    </div>
+    <div class="wallet">
+      <span>TON/USDT (The Open Network)</span>
+      <span class="address">UQDsZ_8MkBtjjp-pVa5Fefdg1jtJApOZ7oeFF3WBlLnwQcHF</span>
+      <button class="copy-btn" data-address="UQDsZ_8MkBtjjp-pVa5Fefdg1jtJApOZ7oeFF3WBlLnwQcHF">Copy</button>
+    </div>
+  </div>
+
   <header>
     <h1>LucCursor</h1>
     <p>Draw your own Windows cursors</p>
   </header>
 
   <main>
-    <aside class="sidebar">
-      <h2>Cursor types</h2>
-      <ul id="cursorList"></ul>
-    </aside>
-
     <section class="editor">
       <div class="toolbar">
         <button id="clearBtn">Clear</button>
         <input type="color" id="colorPicker" value="#000000">
-        <button id="downloadBtn">Download ZIP</button>
       </div>
       <div class="canvas-wrapper">
         <canvas id="pixelCanvas" width="32" height="32"></canvas>
@@ -42,6 +57,11 @@
         <span>Size: 32×32</span>
         <span id="currentType"></span>
       </div>
+      <div id="stepButtons" class="step-buttons">
+        <button id="skipBtn">Skip</button>
+        <button id="continueBtn" disabled>Continue</button>
+      </div>
+      <button id="downloadBtn" class="hidden">Download ZIP</button>
     </section>
   </main>
 
