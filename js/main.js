@@ -18,6 +18,7 @@ const editor = document.getElementById('editor');
 const sizeSelect = document.getElementById('sizeSelect');
 const startBtn = document.getElementById('startBtn');
 const logo = document.getElementById('logo');
+const subtitle = document.getElementById('subtitle');
 const pencilTool = document.getElementById('pencilTool');
 const eraserTool = document.getElementById('eraserTool');
 const fillTool = document.getElementById('fillTool');
@@ -31,17 +32,8 @@ const fileInput = document.getElementById('fileInput');
 const osSelect = document.getElementById('osSelect');
 const downloadSection = document.getElementById('downloadSection');
 const backFromDownloadBtn = document.getElementById('backFromDownloadBtn');
-
-backFromDownloadBtn.addEventListener('click', () => {
-  currentTypeIndex = cursorTypes.length - 1;
-  loadType(currentTypeIndex);
-  if (drawings[cursorTypes[currentTypeIndex].id]) {
-    ctx.putImageData(drawings[cursorTypes[currentTypeIndex].id], 0, 0);
-    saveCurrentImageData();
-    isDrawn = true;
-    continueBtn.disabled = false;
-  }
-});
+const fillYesBtn = document.getElementById('fillYesBtn');
+const fillNoBtn = document.getElementById('fillNoBtn');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -54,6 +46,40 @@ let currentBrushSize = 1;
 let offsetX = 0;
 let offsetY = 0;
 let referenceData = null;
+let fillEmpty = false;
+
+fillYesBtn.addEventListener('click', () => {
+  fillEmpty = true;
+  fillYesBtn.style.background = '#2d5a8a';
+  fillNoBtn.style.background = '#3a6ea5';
+});
+
+fillNoBtn.addEventListener('click', () => {
+  fillEmpty = false;
+  fillNoBtn.style.background = '#2d5a8a';
+  fillYesBtn.style.background = '#3a6ea5';
+});
+
+backFromDownloadBtn.addEventListener('click', () => {
+  currentTypeIndex = cursorTypes.length - 1;
+  loadType(currentTypeIndex);
+  if (drawings[cursorTypes[currentTypeIndex].id]) {
+    ctx.putImageData(drawings[cursorTypes[currentTypeIndex].id], 0, 0);
+    saveCurrentImageData();
+    isDrawn = true;
+    continueBtn.disabled = false;
+  }
+});
+
+subtitle.addEventListener('click', () => {
+  editor.classList.add('hidden');
+  startScreen.classList.remove('hidden');
+  drawings = {};
+  currentTypeIndex = 0;
+  zoomLevel = 1;
+  offsetX = 0;
+  offsetY = 0;
+});
 
 function saveCurrentImageData() {
   savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -624,8 +650,40 @@ function generateLinuxInstallSh() {
   return sh;
 }
 
+function imageDataToPngBlob(imageData) {
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = imageData.width;
+  tempCanvas.height = imageData.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.putImageData(imageData, 0, 0);
+  return new Promise(resolve => {
+    tempCanvas.toBlob(resolve, 'image/png');
+  });
+}
+
 downloadBtn.addEventListener('click', async () => {
-  const selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  if (fillEmpty) {
+    for (const type of cursorTypes) {
+      if (!drawings[type.id]) {
+        const img = new Image();
+        img.src = 'assets/icons/cursors/' + type.id + '.png';
+        await new Promise(resolve => {
+          img.onload = function() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cursorSize;
+            tempCanvas.height = cursorSize;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(img, 0, 0, cursorSize, cursorSize);
+            drawings[type.id] = tempCtx.getImageData(0, 0, cursorSize, cursorSize);
+            resolve();
+          };
+          img.onerror = resolve;
+        });
+      }
+    }
+    selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  }
   if (selectedTypes.length === 0) {
     alert('No cursors selected');
     return;
@@ -634,8 +692,13 @@ downloadBtn.addEventListener('click', async () => {
   const zip = new JSZip();
   const cursorsFolder = zip.folder('cursors');
   for (const type of selectedTypes) {
-    const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
-    cursorsFolder.file(type.file, curBuffer);
+    if (os === 'macos') {
+      const pngBlob = await imageDataToPngBlob(drawings[type.id]);
+      cursorsFolder.file(type.id + '.png', pngBlob);
+    } else {
+      const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
+      cursorsFolder.file(type.file, curBuffer);
+    }
   }
   if (os === 'windows') {
     const installInf = generateInstallInf(selectedTypes);

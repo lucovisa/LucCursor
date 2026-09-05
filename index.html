@@ -43,12 +43,14 @@
 
   <header>
     <h1 id="logo">LucCursor</h1>
-    <p>Draw your own Windows cursors</p>
+    <p id="subtitle">Draw your own Windows cursors</p>
   </header>
 
   <main>
     <div id="startScreen" class="start-screen">
       <h2>Select cursor size</h2>
+      <p class="warning">WARNING!!!</p>
+      <p class="warning-text">If you refresh or leave the page your data will not be saved</p>
       <select id="sizeSelect">
         <option value="16">16×16</option>
         <option value="32" selected>32×32</option>
@@ -92,6 +94,9 @@
         <button id="continueBtn" disabled>Continue</button>
       </div>
       <div id="downloadSection" class="hidden">
+        <p id="fillQuestion">Fill empty files with default images?</p>
+        <button id="fillYesBtn">Yes</button>
+        <button id="fillNoBtn">No</button>
         <button id="backFromDownloadBtn">Back</button>
         <select id="osSelect">
           <option value="windows">Windows</option>
