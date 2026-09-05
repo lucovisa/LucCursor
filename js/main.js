@@ -30,6 +30,17 @@ let isDrawn = false;
 let cursorSize = 32;
 let currentTool = 'pencil';
 let zoomLevel = 1;
+let savedImageData = null;
+
+function saveCurrentImageData() {
+  savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function restoreImageData() {
+  if (savedImageData) {
+    ctx.putImageData(savedImageData, 0, 0);
+  }
+}
 
 function updateCanvasDisplay() {
   canvas.style.width = cursorSize * 16 * zoomLevel + 'px';
@@ -71,7 +82,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'help':
       ctx.beginPath();
       ctx.moveTo(2*s, 2*s);
@@ -87,7 +97,6 @@ function drawDefaultCursorBackground() {
       ctx.font = (9*s) + 'px Arial';
       ctx.fillText('?', 17*s, 17*s);
       break;
-
     case 'background':
       ctx.beginPath();
       ctx.moveTo(2*s, 2*s);
@@ -105,7 +114,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'busy':
       ctx.beginPath();
       ctx.arc(16*s, 16*s, 6*s, 0, Math.PI * 2);
@@ -116,7 +124,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'text':
       ctx.beginPath();
       ctx.moveTo(4*s, 4*s);
@@ -135,7 +142,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'handwriting':
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
@@ -147,7 +153,6 @@ function drawDefaultCursorBackground() {
       ctx.lineTo(20*s, 20*s);
       ctx.stroke();
       break;
-
     case 'unavailable':
       ctx.beginPath();
       ctx.arc(16*s, 16*s, 8*s, 0, Math.PI * 2);
@@ -158,7 +163,6 @@ function drawDefaultCursorBackground() {
       ctx.lineTo(26*s, 6*s);
       ctx.stroke();
       break;
-
     case 'vresize':
       ctx.beginPath();
       ctx.moveTo(16*s, 4*s);
@@ -175,7 +179,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'hresize':
       ctx.beginPath();
       ctx.moveTo(4*s, 16*s);
@@ -192,7 +195,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'dresize1':
       ctx.beginPath();
       ctx.moveTo(4*s, 4*s);
@@ -209,7 +211,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'dresize2':
       ctx.beginPath();
       ctx.moveTo(28*s, 4*s);
@@ -226,7 +227,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'move':
       ctx.beginPath();
       ctx.moveTo(16*s, 2*s);
@@ -243,7 +243,6 @@ function drawDefaultCursorBackground() {
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'link':
       ctx.beginPath();
       ctx.moveTo(10*s, 4*s);
@@ -270,6 +269,7 @@ function drawDefaultCursorBackground() {
       break;
   }
   ctx.restore();
+  saveCurrentImageData();
 }
 
 function initCanvas() {
@@ -339,6 +339,7 @@ function floodFill(x, y, fillColor) {
   ctx.putImageData(imageData, 0, 0);
   isDrawn = true;
   continueBtn.disabled = false;
+  saveCurrentImageData();
 }
 
 canvas.addEventListener('mousedown', (e) => {
@@ -348,6 +349,7 @@ canvas.addEventListener('mousedown', (e) => {
     ctx.fillRect(x, y, 1, 1);
     isDrawn = true;
     continueBtn.disabled = false;
+    saveCurrentImageData();
   } else if (currentTool === 'fill') {
     const { x, y } = getPixelCoords(e);
     const fillColor = hexToRgb(colorPicker.value);
@@ -362,6 +364,7 @@ canvas.addEventListener('mousemove', (e) => {
     ctx.fillRect(x, y, 1, 1);
     isDrawn = true;
     continueBtn.disabled = false;
+    saveCurrentImageData();
   }
 });
 
@@ -413,11 +416,13 @@ fillTool.addEventListener('click', () => {
 zoomInBtn.addEventListener('click', () => {
   zoomLevel *= 2;
   updateCanvasDisplay();
+  restoreImageData();
 });
 
 zoomOutBtn.addEventListener('click', () => {
-  zoomLevel /= 2;
+  zoomLevel = Math.max(zoomLevel / 2, 1);
   updateCanvasDisplay();
+  restoreImageData();
 });
 
 function canvasToCur(imageData, width, height) {
@@ -425,11 +430,9 @@ function canvasToCur(imageData, width, height) {
   const h = height;
   const buffer = new ArrayBuffer(6 + 16 + 40 + w*h*4 + w*h/8);
   const dv = new DataView(buffer);
-
   dv.setUint16(0, 0, true);
   dv.setUint16(2, 2, true);
   dv.setUint16(4, 1, true);
-
   dv.setUint8(6, w);
   dv.setUint8(7, h);
   dv.setUint8(8, 0);
@@ -439,7 +442,6 @@ function canvasToCur(imageData, width, height) {
   const dataSize = 40 + w*h*4 + w*h/8;
   dv.setUint32(14, dataSize, true);
   dv.setUint32(18, 22, true);
-
   const biOffset = 22;
   dv.setUint32(biOffset, 40, true);
   dv.setInt32(biOffset+4, w, true);
@@ -452,7 +454,6 @@ function canvasToCur(imageData, width, height) {
   dv.setInt32(biOffset+28, 0, true);
   dv.setUint32(biOffset+32, 0, true);
   dv.setUint32(biOffset+36, 0, true);
-
   const pixels = imageData.data;
   const pixelOffset = biOffset + 40;
   for (let y = 0; y < h; y++) {
@@ -466,7 +467,6 @@ function canvasToCur(imageData, width, height) {
       dv.setUint8(dstIndex + 3, pixels[srcIndex + 3]);
     }
   }
-
   const andOffset = pixelOffset + w*h*4;
   for (let i = 0; i < w*h/8; i++) {
     dv.setUint8(andOffset + i, 0);
@@ -503,26 +503,20 @@ downloadBtn.addEventListener('click', async () => {
   }
   const zip = new JSZip();
   const cursorsFolder = zip.folder('cursors');
-  
   for (const type of selectedTypes) {
     const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
     cursorsFolder.file(type.file, curBuffer);
   }
-  
   const installInf = generateInstallInf(selectedTypes);
   zip.file('install.inf', installInf);
   zip.file('install.bat', generateInstallBat());
-
   try {
     const response = await fetch('README.md');
     if (response.ok) {
       const readmeText = await response.text();
       zip.file('README.md', readmeText);
     }
-  } catch (e) {
-    console.log('README not found');
-  }
-  
+  } catch (e) {}
   const blob = await zip.generateAsync({type: 'blob'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -541,9 +535,9 @@ themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
   if (document.body.classList.contains('dark')) {
-    icon.textContent = '☀️';
-  } else {
     icon.textContent = '🌙';
+  } else {
+    icon.textContent = '☀️';
   }
 });
 
@@ -570,5 +564,3 @@ startBtn.addEventListener('click', () => {
 logo.addEventListener('click', () => {
   window.open('https://github.com/lucovisa', '_blank');
 });
-
-setCanvasSize(32);

@@ -19,7 +19,7 @@
 </head>
 <body class="dark">
   <button id="themeToggle" class="theme-toggle">
-    <span class="icon">☀️</span>
+    <span class="icon">🌙</span>
   </button>
   <button id="donateBtn" class="donate-btn">❤️ Donate</button>
   <div id="donateMenu" class="donate-menu">
@@ -67,12 +67,14 @@
         <div class="tools">
           <button id="pencilTool" class="tool-btn active" title="Pencil">✏️</button>
           <button id="fillTool" class="tool-btn" title="Fill">🪣</button>
-          <button id="zoomInBtn" class="tool-btn" title="Zoom In">➕</button>
-          <button id="zoomOutBtn" class="tool-btn" title="Zoom Out">➖</button>
+          <div class="zoom-controls">
+            <button id="zoomInBtn" class="tool-btn" title="Zoom In">➕</button>
+            <button id="zoomOutBtn" class="tool-btn" title="Zoom Out">➖</button>
+          </div>
         </div>
       </div>
       <div id="canvasContainer" class="canvas-container">
-        <canvas id="pixelCanvas" width="32" height="32"></canvas>
+        <canvas id="pixelCanvas"></canvas>
       </div>
       <div class="info">
         <span id="sizeLabel">Size: 32×32</span>

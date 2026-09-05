@@ -16,13 +16,15 @@ body {
 body.dark {
   background: #1a1a1a;
   color: #e0e0e0;
-  --border-color: #fff;
+  --active-bg: #fff;
+  --active-border: #fff;
 }
 
 body.light {
   background: #f5f5f5;
   color: #222;
-  --border-color: #000;
+  --active-bg: #000;
+  --active-border: #000;
 }
 
 .theme-toggle {
@@ -39,17 +41,19 @@ body.light {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s, border-color 0.3s;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
 
 body.dark .theme-toggle {
   background: #000;
   color: #fff;
+  border-color: #000;
 }
 
 body.light .theme-toggle {
   background: #fff;
   color: #000;
+  border-color: #fff;
 }
 
 .donate-btn {
@@ -205,6 +209,12 @@ main {
 .tools {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.zoom-controls {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .tool-btn {
@@ -218,8 +228,8 @@ main {
 }
 
 .tool-btn.active {
-  border-color: var(--border-color);
-  background-color: var(--border-color);
+  border-color: var(--active-border);
+  background-color: var(--active-bg);
 }
 
 button {
