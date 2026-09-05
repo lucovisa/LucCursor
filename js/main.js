@@ -30,6 +30,18 @@ const saveBtn = document.getElementById('saveBtn');
 const fileInput = document.getElementById('fileInput');
 const osSelect = document.getElementById('osSelect');
 const downloadSection = document.getElementById('downloadSection');
+const backFromDownloadBtn = document.getElementById('backFromDownloadBtn');
+
+backFromDownloadBtn.addEventListener('click', () => {
+  currentTypeIndex = cursorTypes.length - 1;
+  loadType(currentTypeIndex);
+  if (drawings[cursorTypes[currentTypeIndex].id]) {
+    ctx.putImageData(drawings[cursorTypes[currentTypeIndex].id], 0, 0);
+    saveCurrentImageData();
+    isDrawn = true;
+    continueBtn.disabled = false;
+  }
+});
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -41,6 +53,7 @@ let savedImageData = null;
 let currentBrushSize = 1;
 let offsetX = 0;
 let offsetY = 0;
+let referenceData = null;
 
 function saveCurrentImageData() {
   savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -283,6 +296,7 @@ function drawDefaultCursorBackground() {
       break;
   }
   ctx.restore();
+  referenceData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   saveCurrentImageData();
 }
 
@@ -296,8 +310,8 @@ function loadType(index) {
   if (index >= cursorTypes.length) {
     stepButtons.classList.add('hidden');
     downloadSection.classList.remove('hidden');
-    currentTypeSpan.textContent = '';
-    sizeLabel.textContent = '';
+    currentTypeSpan.textContent = 'Done!';
+    sizeLabel.textContent = 'Size: ' + cursorSize + '×' + cursorSize;
     canvasContainer.classList.add('hidden');
     document.querySelector('.toolbar').classList.add('hidden');
     document.querySelector('.info').classList.add('hidden');
@@ -321,7 +335,15 @@ function nextType() {
 
 function saveCurrent() {
   const currentType = cursorTypes[currentTypeIndex];
-  drawings[currentType.id] = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const refData = referenceData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] === refData[i] && data[i+1] === refData[i+1] && data[i+2] === refData[i+2] && data[i+3] === refData[i+3]) {
+      data[i+3] = 0;
+    }
+  }
+  drawings[currentType.id] = imageData;
 }
 
 function getPixelCoords(e) {
@@ -431,6 +453,8 @@ backBtn.addEventListener('click', () => {
     if (drawings[cursorTypes[currentTypeIndex].id]) {
       ctx.putImageData(drawings[cursorTypes[currentTypeIndex].id], 0, 0);
       saveCurrentImageData();
+      isDrawn = true;
+      continueBtn.disabled = false;
     }
   }
 });
@@ -625,7 +649,7 @@ downloadBtn.addEventListener('click', async () => {
     const linuxReadme = `# Linux Installation\n\n1. Extract this ZIP\n2. Run: chmod +x install.sh && ./install.sh\n3. Or manually copy cursors folder to ~/.icons/LucCursor\n4. Select LucCursor in Settings > Appearance > Cursors\n`;
     zip.file('README.md', linuxReadme);
   } else if (os === 'macos') {
-    const macReadme = `# macOS Installation\n\n1. Extract this ZIP\n2. Copy cursors folder to /Library/Cursors\n3. Open System Settings > Accessibility > Display > Pointer\n4. Click the color well and choose Custom\n5. Select the .cur files from the cursors folder\n`;
+    const macReadme = `# macOS Installation\n\n1. Download and install Mousecape\n2. Open Mousecape\n3. Create a new cape\n4. Add the cursor files from the cursors folder\n5. Click Apply to enable the cursor theme\n`;
     zip.file('README.md', macReadme);
   }
   const blob = await zip.generateAsync({type: 'blob'});
