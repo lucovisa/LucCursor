@@ -25,7 +25,11 @@ const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
 const brushSize = document.getElementById('brushSize');
 const brushSizeLabel = document.getElementById('brushSizeLabel');
+const loadBtn = document.getElementById('loadBtn');
+const saveBtn = document.getElementById('saveBtn');
+const fileInput = document.getElementById('fileInput');
 const osSelect = document.getElementById('osSelect');
+const downloadSection = document.getElementById('downloadSection');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -291,8 +295,7 @@ function initCanvas() {
 function loadType(index) {
   if (index >= cursorTypes.length) {
     stepButtons.classList.add('hidden');
-    downloadBtn.classList.remove('hidden');
-    osSelect.classList.remove('hidden');
+    downloadSection.classList.remove('hidden');
     currentTypeSpan.textContent = 'Done!';
     return;
   }
@@ -300,8 +303,7 @@ function loadType(index) {
   currentTypeSpan.textContent = type.name;
   initCanvas();
   stepButtons.classList.remove('hidden');
-  downloadBtn.classList.add('hidden');
-  osSelect.classList.add('hidden');
+  downloadSection.classList.add('hidden');
   backBtn.classList.remove('hidden');
 }
 
@@ -470,6 +472,40 @@ zoomOutBtn.addEventListener('click', () => {
 brushSize.addEventListener('input', () => {
   currentBrushSize = parseInt(brushSize.value);
   brushSizeLabel.textContent = currentBrushSize;
+});
+
+loadBtn.addEventListener('click', () => {
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = new Image();
+  img.onload = function() {
+    if (img.width !== cursorSize || img.height !== cursorSize) {
+      alert('Image must be ' + cursorSize + '×' + cursorSize);
+      return;
+    }
+    ctx.drawImage(img, 0, 0);
+    isDrawn = true;
+    continueBtn.disabled = false;
+    saveCurrentImageData();
+  };
+  img.src = URL.createObjectURL(file);
+});
+
+saveBtn.addEventListener('click', () => {
+  const currentType = cursorTypes[currentTypeIndex];
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const curBuffer = canvasToCur(imageData, cursorSize, cursorSize);
+  const blob = new Blob([curBuffer], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentType.file;
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 function canvasToCur(imageData, width, height) {
