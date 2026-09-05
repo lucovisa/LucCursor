@@ -32,8 +32,6 @@ const fileInput = document.getElementById('fileInput');
 const osSelect = document.getElementById('osSelect');
 const downloadSection = document.getElementById('downloadSection');
 const backFromDownloadBtn = document.getElementById('backFromDownloadBtn');
-const fillYesBtn = document.getElementById('fillYesBtn');
-const fillNoBtn = document.getElementById('fillNoBtn');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -47,18 +45,6 @@ let offsetX = 0;
 let offsetY = 0;
 let referenceData = null;
 let fillEmpty = false;
-
-fillYesBtn.addEventListener('click', () => {
-  fillEmpty = true;
-  fillYesBtn.style.background = '#2d5a8a';
-  fillNoBtn.style.background = '#3a6ea5';
-});
-
-fillNoBtn.addEventListener('click', () => {
-  fillEmpty = false;
-  fillNoBtn.style.background = '#2d5a8a';
-  fillYesBtn.style.background = '#3a6ea5';
-});
 
 backFromDownloadBtn.addEventListener('click', () => {
   currentTypeIndex = cursorTypes.length - 1;
