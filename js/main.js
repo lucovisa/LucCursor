@@ -354,6 +354,13 @@ canvas.addEventListener('mousedown', (e) => {
     const { x, y } = getPixelCoords(e);
     const fillColor = hexToRgb(colorPicker.value);
     floodFill(x, y, fillColor);
+  } else if (currentTool === 'zoomin') {
+    zoomLevel *= 2;
+    updateCanvasDisplay();
+    restoreImageData();
+    currentTool = 'pencil';
+    pencilTool.classList.add('active');
+    zoomInBtn.classList.remove('active');
   }
 });
 
@@ -405,18 +412,21 @@ pencilTool.addEventListener('click', () => {
   currentTool = 'pencil';
   pencilTool.classList.add('active');
   fillTool.classList.remove('active');
+  zoomInBtn.classList.remove('active');
 });
 
 fillTool.addEventListener('click', () => {
   currentTool = 'fill';
   fillTool.classList.add('active');
   pencilTool.classList.remove('active');
+  zoomInBtn.classList.remove('active');
 });
 
 zoomInBtn.addEventListener('click', () => {
-  zoomLevel *= 2;
-  updateCanvasDisplay();
-  restoreImageData();
+  currentTool = 'zoomin';
+  zoomInBtn.classList.add('active');
+  pencilTool.classList.remove('active');
+  fillTool.classList.remove('active');
 });
 
 zoomOutBtn.addEventListener('click', () => {

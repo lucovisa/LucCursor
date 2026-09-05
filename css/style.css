@@ -32,8 +32,8 @@ body.light {
   top: 15px;
   right: 20px;
   z-index: 100;
-  border: 2px solid currentColor;
-  border-radius: 50%;
+  border: none;
+  border-radius: 0;
   width: 44px;
   height: 44px;
   cursor: pointer;
@@ -41,19 +41,17 @@ body.light {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s, border-color 0.3s, color 0.3s;
+  transition: background 0.3s, color 0.3s;
 }
 
 body.dark .theme-toggle {
-  background: #000;
-  color: #fff;
-  border-color: #000;
+  background: #fff;
+  color: #000;
 }
 
 body.light .theme-toggle {
-  background: #fff;
-  color: #000;
-  border-color: #fff;
+  background: #000;
+  color: #fff;
 }
 
 .donate-btn {
@@ -210,11 +208,6 @@ main {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-}
-
-.zoom-controls {
-  display: flex;
-  gap: 0.25rem;
 }
 
 .tool-btn {
