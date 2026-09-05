@@ -19,10 +19,12 @@ const sizeSelect = document.getElementById('sizeSelect');
 const startBtn = document.getElementById('startBtn');
 const logo = document.getElementById('logo');
 const pencilTool = document.getElementById('pencilTool');
+const eraserTool = document.getElementById('eraserTool');
 const fillTool = document.getElementById('fillTool');
 const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
-const canvasContainer = document.getElementById('canvasContainer');
+const brushSize = document.getElementById('brushSize');
+const brushSizeLabel = document.getElementById('brushSizeLabel');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -31,6 +33,7 @@ let cursorSize = 32;
 let currentTool = 'pencil';
 let zoomLevel = 1;
 let savedImageData = null;
+let currentBrushSize = 1;
 
 function saveCurrentImageData() {
   savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -51,6 +54,7 @@ function setCanvasSize(size) {
   cursorSize = size;
   canvas.width = size;
   canvas.height = size;
+  brushSize.max = size;
   updateCanvasDisplay();
   sizeLabel.textContent = 'Size: ' + size + '×' + size;
 }
@@ -342,14 +346,23 @@ function floodFill(x, y, fillColor) {
   saveCurrentImageData();
 }
 
-canvas.addEventListener('mousedown', (e) => {
+function drawBrush(x, y) {
+  const half = Math.floor(currentBrushSize / 2);
   if (currentTool === 'pencil') {
-    const { x, y } = getPixelCoords(e);
     ctx.fillStyle = colorPicker.value;
-    ctx.fillRect(x, y, 1, 1);
-    isDrawn = true;
-    continueBtn.disabled = false;
-    saveCurrentImageData();
+  } else if (currentTool === 'eraser') {
+    ctx.fillStyle = '#ffffff';
+  }
+  ctx.fillRect(x - half, y - half, currentBrushSize, currentBrushSize);
+  isDrawn = true;
+  continueBtn.disabled = false;
+  saveCurrentImageData();
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (currentTool === 'pencil' || currentTool === 'eraser') {
+    const { x, y } = getPixelCoords(e);
+    drawBrush(x, y);
   } else if (currentTool === 'fill') {
     const { x, y } = getPixelCoords(e);
     const fillColor = hexToRgb(colorPicker.value);
@@ -358,20 +371,13 @@ canvas.addEventListener('mousedown', (e) => {
     zoomLevel *= 2;
     updateCanvasDisplay();
     restoreImageData();
-    currentTool = 'pencil';
-    pencilTool.classList.add('active');
-    zoomInBtn.classList.remove('active');
   }
 });
 
 canvas.addEventListener('mousemove', (e) => {
-  if (e.buttons === 1 && currentTool === 'pencil') {
+  if (e.buttons === 1 && (currentTool === 'pencil' || currentTool === 'eraser')) {
     const { x, y } = getPixelCoords(e);
-    ctx.fillStyle = colorPicker.value;
-    ctx.fillRect(x, y, 1, 1);
-    isDrawn = true;
-    continueBtn.disabled = false;
-    saveCurrentImageData();
+    drawBrush(x, y);
   }
 });
 
@@ -408,31 +414,39 @@ continueBtn.addEventListener('click', () => {
   nextType();
 });
 
-pencilTool.addEventListener('click', () => {
-  currentTool = 'pencil';
-  pencilTool.classList.add('active');
+function setActiveTool(tool) {
+  currentTool = tool;
+  pencilTool.classList.remove('active');
+  eraserTool.classList.remove('active');
   fillTool.classList.remove('active');
   zoomInBtn.classList.remove('active');
-});
+  if (tool === 'pencil') pencilTool.classList.add('active');
+  if (tool === 'eraser') eraserTool.classList.add('active');
+  if (tool === 'fill') fillTool.classList.add('active');
+  if (tool === 'zoomin') zoomInBtn.classList.add('active');
+}
 
-fillTool.addEventListener('click', () => {
-  currentTool = 'fill';
-  fillTool.classList.add('active');
-  pencilTool.classList.remove('active');
-  zoomInBtn.classList.remove('active');
-});
+pencilTool.addEventListener('click', () => setActiveTool('pencil'));
+eraserTool.addEventListener('click', () => setActiveTool('eraser'));
+fillTool.addEventListener('click', () => setActiveTool('fill'));
 
 zoomInBtn.addEventListener('click', () => {
-  currentTool = 'zoomin';
-  zoomInBtn.classList.add('active');
-  pencilTool.classList.remove('active');
-  fillTool.classList.remove('active');
+  if (currentTool === 'zoomin') {
+    setActiveTool('pencil');
+  } else {
+    setActiveTool('zoomin');
+  }
 });
 
 zoomOutBtn.addEventListener('click', () => {
-  zoomLevel = Math.max(zoomLevel / 2, 1);
+  zoomLevel = Math.max(zoomLevel / 2, 0.5);
   updateCanvasDisplay();
   restoreImageData();
+});
+
+brushSize.addEventListener('input', () => {
+  currentBrushSize = parseInt(brushSize.value);
+  brushSizeLabel.textContent = currentBrushSize;
 });
 
 function canvasToCur(imageData, width, height) {
@@ -545,9 +559,9 @@ themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
   if (document.body.classList.contains('dark')) {
-    icon.textContent = '🌙';
-  } else {
     icon.textContent = '☀️';
+  } else {
+    icon.textContent = '🌙';
   }
 });
 

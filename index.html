@@ -66,9 +66,15 @@
         <input type="color" id="colorPicker" value="#000000">
         <div class="tools">
           <button id="pencilTool" class="tool-btn active" title="Pencil">✏️</button>
+          <button id="eraserTool" class="tool-btn" title="Eraser">🧹</button>
           <button id="fillTool" class="tool-btn" title="Fill">🪣</button>
           <button id="zoomInBtn" class="tool-btn" title="Zoom In">➕</button>
           <button id="zoomOutBtn" class="tool-btn" title="Zoom Out">➖</button>
+        </div>
+        <div class="brush-size">
+          <label for="brushSize">Size:</label>
+          <input type="range" id="brushSize" min="1" max="16" value="1">
+          <span id="brushSizeLabel">1</span>
         </div>
       </div>
       <div id="canvasContainer" class="canvas-container">

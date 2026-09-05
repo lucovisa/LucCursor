@@ -202,6 +202,8 @@ main {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .tools {
@@ -223,6 +225,16 @@ main {
 .tool-btn.active {
   border-color: var(--active-border);
   background-color: var(--active-bg);
+}
+
+.brush-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brush-size input[type="range"] {
+  width: 100px;
 }
 
 button {
