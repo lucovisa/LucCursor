@@ -144,74 +144,6 @@ function generateInstallInf(selectedTypes) {
   selectedTypes.forEach(type => {
     inf += `${type.file}\n`;
   });
-  inf += `\n[Scheme.AddReg]\nHKCU,"Control Panel\\Cursors\\Schemes","LucCursor",0x00020000,`;
-  const paths = selectedTypes.map(t => `%10%\\Cursors\\LucCursor\\${t.file}`).join(',');
-  inf += `"${paths}"\n`;
-  return inf;
-}
-
-downloadBtn.addEventListener('click', async () => {
-  const selectedTypes = cursorTypes.filter(type => drawings[type.id]);
-  if (selectedTypes.length === 0) {
-    alert('No cursors selected');
-    return;
-  }
-  const zip = new JSZip();
-  const cursorsFolder = zip.folder('cursors');
-  
-  for (const type of selectedTypes) {
-    const curBuffer = canvasToCur(drawings[type.id]);
-    cursorsFolder.file(type.file, curBuffer);
-  }
-  
-  const installInf = generateInstallInf(selectedTypes);
-  zip.file('install.inf', installInf);
-
-  try {
-    const response = await fetch('README.md');
-    if (response.ok) {
-      const readmeText = await response.text();
-      zip.file('README.md', readmeText);
-    }
-  } catch (e) {
-    console.log('README not found');
-  }
-  
-  const blob = await zip.generateAsync({type: 'blob'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'LucCursor.zip';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-donateBtn.addEventListener('click', () => {
-  donateMenu.classList.toggle('hidden');
-});
-
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  document.body.classList.toggle('light');
-  themeToggle.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
-});
-
-copyBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    navigator.clipboard.writeText(btn.dataset.address).then(() => {
-      const original = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = original, 1500);
-    });
-  });
-});
-
-loadType(0);
-function generateInstallInf(selectedTypes) {
-  let inf = `[Version]\nSignature = "$Chicago$"\n\n[DefaultInstall]\nCopyFiles = Scheme.Cur\nAddReg = Scheme.AddReg\n\n[DestinationDirs]\nScheme.Cur = 10,"Cursors\\LucCursor"\n\n[Scheme.Cur]\n`;
-  selectedTypes.forEach(type => {
-    inf += `${type.file}\n`;
-  });
   inf += `\n[Scheme.AddReg]\nHKCU,"Control Panel\\Cursors","",0x00020000,`;
   const paths = selectedTypes.map(t => `%10%\\Cursors\\LucCursor\\${t.file}`).join(',');
   inf += `"${paths}"\n`;
@@ -264,3 +196,34 @@ downloadBtn.addEventListener('click', async () => {
   a.click();
   URL.revokeObjectURL(url);
 });
+
+donateBtn.addEventListener('click', () => {
+  donateMenu.classList.toggle('show');
+  donateMenu.classList.toggle('hidden');
+});
+
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  document.body.classList.toggle('light');
+  const icon = themeToggle.querySelector('.icon');
+  const text = themeToggle.querySelector('.text');
+  if (document.body.classList.contains('dark')) {
+    icon.textContent = '🌙';
+    text.textContent = 'Dark';
+  } else {
+    icon.textContent = '☀️';
+    text.textContent = 'Light';
+  }
+});
+
+copyBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.address).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = original, 1500);
+    });
+  });
+});
+
+loadType(0);
