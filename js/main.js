@@ -18,18 +18,23 @@ const editor = document.getElementById('editor');
 const sizeSelect = document.getElementById('sizeSelect');
 const startBtn = document.getElementById('startBtn');
 const logo = document.getElementById('logo');
+const pencilTool = document.getElementById('pencilTool');
+const fillTool = document.getElementById('fillTool');
+const zoomTool = document.getElementById('zoomTool');
 
 let drawings = {};
 let currentTypeIndex = 0;
 let isDrawn = false;
 let cursorSize = 32;
+let currentTool = 'pencil';
+let zoomLevel = 1;
 
 function setCanvasSize(size) {
   cursorSize = size;
   canvas.width = size;
   canvas.height = size;
-  canvas.style.width = size * 16 + 'px';
-  canvas.style.height = size * 16 + 'px';
+  canvas.style.width = size * 16 * zoomLevel + 'px';
+  canvas.style.height = size * 16 * zoomLevel + 'px';
   sizeLabel.textContent = 'Size: ' + size + '×' + size;
 }
 
@@ -126,6 +131,7 @@ function drawDefaultCursorBackground() {
       break;
 
     case 'handwriting':
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(4*s, 20*s);
       ctx.lineTo(8*s, 8*s);
@@ -277,11 +283,7 @@ function loadType(index) {
   initCanvas();
   stepButtons.classList.remove('hidden');
   downloadBtn.classList.add('hidden');
-  if (index > 0) {
-    backBtn.classList.remove('hidden');
-  } else {
-    backBtn.classList.add('hidden');
-  }
+  backBtn.classList.remove('hidden');
 }
 
 function nextType() {
@@ -294,31 +296,77 @@ function saveCurrent() {
   drawings[currentType.id] = ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-canvas.addEventListener('mousedown', (e) => {
+function getPixelCoords(e) {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   const x = Math.floor((e.clientX - rect.left) * scaleX);
   const y = Math.floor((e.clientY - rect.top) * scaleY);
-  ctx.fillStyle = colorPicker.value;
-  ctx.fillRect(x, y, 1, 1);
+  return { x, y };
+}
+
+function floodFill(x, y, fillColor) {
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const targetColor = ctx.getImageData(x, y, 1, 1).data;
+  if (targetColor[0] === fillColor[0] && targetColor[1] === fillColor[1] && targetColor[2] === fillColor[2] && targetColor[3] === fillColor[3]) return;
+  const visited = new Uint8Array(canvas.width * canvas.height);
+  const stack = [[x, y]];
+  while (stack.length) {
+    const [cx, cy] = stack.pop();
+    const idx = cy * canvas.width + cx;
+    if (visited[idx]) continue;
+    visited[idx] = 1;
+    const pixelIdx = idx * 4;
+    if (data[pixelIdx] === targetColor[0] && data[pixelIdx+1] === targetColor[1] && data[pixelIdx+2] === targetColor[2] && data[pixelIdx+3] === targetColor[3]) {
+      data[pixelIdx] = fillColor[0];
+      data[pixelIdx+1] = fillColor[1];
+      data[pixelIdx+2] = fillColor[2];
+      data[pixelIdx+3] = 255;
+      if (cx > 0) stack.push([cx-1, cy]);
+      if (cx < canvas.width-1) stack.push([cx+1, cy]);
+      if (cy > 0) stack.push([cx, cy-1]);
+      if (cy < canvas.height-1) stack.push([cx, cy+1]);
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
   isDrawn = true;
   continueBtn.disabled = false;
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (currentTool === 'pencil') {
+    const { x, y } = getPixelCoords(e);
+    ctx.fillStyle = colorPicker.value;
+    ctx.fillRect(x, y, 1, 1);
+    isDrawn = true;
+    continueBtn.disabled = false;
+  } else if (currentTool === 'fill') {
+    const { x, y } = getPixelCoords(e);
+    const fillColor = hexToRgb(colorPicker.value);
+    floodFill(x, y, fillColor);
+  } else if (currentTool === 'zoom') {
+    zoomLevel = zoomLevel === 1 ? 2 : 1;
+    setCanvasSize(cursorSize);
+  }
 });
 
 canvas.addEventListener('mousemove', (e) => {
-  if (e.buttons === 1) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = Math.floor((e.clientX - rect.left) * scaleX);
-    const y = Math.floor((e.clientY - rect.top) * scaleY);
+  if (e.buttons === 1 && currentTool === 'pencil') {
+    const { x, y } = getPixelCoords(e);
     ctx.fillStyle = colorPicker.value;
     ctx.fillRect(x, y, 1, 1);
     isDrawn = true;
     continueBtn.disabled = false;
   }
 });
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return [r, g, b];
+}
 
 clearBtn.addEventListener('click', () => {
   initCanvas();
@@ -328,7 +376,12 @@ backBtn.addEventListener('click', () => {
   if (isDrawn) {
     saveCurrent();
   }
-  if (currentTypeIndex > 0) {
+  if (currentTypeIndex === 0) {
+    editor.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    drawings = {};
+    currentTypeIndex = 0;
+  } else {
     currentTypeIndex--;
     loadType(currentTypeIndex);
   }
@@ -339,6 +392,27 @@ skipBtn.addEventListener('click', nextType);
 continueBtn.addEventListener('click', () => {
   saveCurrent();
   nextType();
+});
+
+pencilTool.addEventListener('click', () => {
+  currentTool = 'pencil';
+  pencilTool.classList.add('active');
+  fillTool.classList.remove('active');
+  zoomTool.classList.remove('active');
+});
+
+fillTool.addEventListener('click', () => {
+  currentTool = 'fill';
+  fillTool.classList.add('active');
+  pencilTool.classList.remove('active');
+  zoomTool.classList.remove('active');
+});
+
+zoomTool.addEventListener('click', () => {
+  currentTool = 'zoom';
+  zoomTool.classList.add('active');
+  pencilTool.classList.remove('active');
+  fillTool.classList.remove('active');
 });
 
 function canvasToCur(imageData, width, height) {
@@ -462,9 +536,9 @@ themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
   if (document.body.classList.contains('dark')) {
-    icon.textContent = '☀️';
-  } else {
     icon.textContent = '🌙';
+  } else {
+    icon.textContent = '☀️';
   }
 });
 
@@ -480,9 +554,11 @@ copyBtns.forEach(btn => {
 
 startBtn.addEventListener('click', () => {
   cursorSize = parseInt(sizeSelect.value);
+  zoomLevel = 1;
   setCanvasSize(cursorSize);
   startScreen.classList.add('hidden');
   editor.classList.remove('hidden');
+  currentTypeIndex = 0;
   loadType(0);
 });
 

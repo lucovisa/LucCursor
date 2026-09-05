@@ -28,7 +28,6 @@ body.light {
   top: 15px;
   right: 20px;
   z-index: 100;
-  background: none;
   border: 2px solid currentColor;
   border-radius: 50%;
   width: 44px;
@@ -39,6 +38,16 @@ body.light {
   align-items: center;
   justify-content: center;
   transition: background 0.3s, border-color 0.3s;
+}
+
+body.dark .theme-toggle {
+  background: #000;
+  color: #fff;
+}
+
+body.light .theme-toggle {
+  background: #fff;
+  color: #000;
 }
 
 .donate-btn {
@@ -191,6 +200,33 @@ main {
   align-items: center;
 }
 
+.tools {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tool-btn {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 0;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: border-color 0.3s;
+}
+
+.tool-btn.active {
+  border-color: #000;
+}
+
+body.light .tool-btn.active {
+  border-color: #000;
+}
+
+body.dark .tool-btn.active {
+  border-color: #fff;
+}
+
 button {
   padding: 0.5rem 1rem;
   background: #3a6ea5;
@@ -237,7 +273,15 @@ input[type="color"] {
 .info {
   display: flex;
   gap: 2rem;
-  color: #aaa;
+  transition: color 0.3s;
+}
+
+body.dark .info {
+  color: #e0e0e0;
+}
+
+body.light .info {
+  color: #222;
 }
 
 .step-buttons {

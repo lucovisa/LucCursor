@@ -64,6 +64,11 @@
       <div class="toolbar">
         <button id="clearBtn">Clear</button>
         <input type="color" id="colorPicker" value="#000000">
+        <div class="tools">
+          <button id="pencilTool" class="tool-btn active" title="Pencil">✏️</button>
+          <button id="fillTool" class="tool-btn" title="Fill">🪣</button>
+          <button id="zoomTool" class="tool-btn" title="Zoom">🔍</button>
+        </div>
       </div>
       <div class="canvas-wrapper">
         <canvas id="pixelCanvas" width="32" height="32"></canvas>
@@ -73,7 +78,7 @@
         <span id="currentType"></span>
       </div>
       <div id="stepButtons" class="step-buttons">
-        <button id="backBtn" class="hidden">Back</button>
+        <button id="backBtn">Back</button>
         <button id="skipBtn">Skip</button>
         <button id="continueBtn" disabled>Continue</button>
       </div>
