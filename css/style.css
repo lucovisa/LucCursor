@@ -27,15 +27,6 @@ body.light {
   --active-border: #000;
 }
 
-.clickable {
-  cursor: pointer;
-}
-
-.clickable:hover {
-  text-decoration: underline;
-  opacity: 0.8;
-}
-
 .theme-toggle {
   position: fixed;
   top: 15px;
@@ -191,17 +182,6 @@ main {
   gap: 1rem;
 }
 
-.warning {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #e74c3c;
-}
-
-.warning-text {
-  font-size: 0.9rem;
-  text-align: center;
-}
-
 .start-screen select {
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -322,6 +302,30 @@ body.light .info {
   gap: 1rem;
 }
 
+.hidden {
+  display: none;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.warning {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #e74c3c;
+}
+
+.warning-text {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 #downloadSection {
   display: flex;
   flex-direction: column;
@@ -336,8 +340,4 @@ body.light .info {
   border-radius: 0;
   background: transparent;
   color: inherit;
-}
-
-.hidden {
-  display: none;
 }
