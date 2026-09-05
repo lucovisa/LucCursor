@@ -332,11 +332,11 @@ function loadType(index) {
   canvasContainer.classList.remove('hidden');
   document.querySelector('.toolbar').classList.remove('hidden');
   document.querySelector('.info').classList.remove('hidden');
+  downloadSection.classList.add('hidden');
   const type = cursorTypes[index];
   currentTypeSpan.textContent = type.name;
   initCanvas();
   stepButtons.classList.remove('hidden');
-  downloadSection.classList.add('hidden');
   backBtn.classList.remove('hidden');
 }
 
