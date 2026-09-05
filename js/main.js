@@ -648,29 +648,34 @@ function imageDataToPngBlob(imageData) {
 }
 
 downloadBtn.addEventListener('click', async () => {
-  const fillEmpty = document.getElementById('fillSelect').value === 'yes';
-  let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
-  if (fillEmpty) {
-    for (const type of cursorTypes) {
-      if (!drawings[type.id]) {
-        const img = new Image();
-        img.src = 'assets/icons/cursors/' + type.id + '.png';
-        await new Promise(resolve => {
-          img.onload = function() {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = cursorSize;
-            tempCanvas.height = cursorSize;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(img, 0, 0, cursorSize, cursorSize);
-            drawings[type.id] = tempCtx.getImageData(0, 0, cursorSize, cursorSize);
-            resolve();
-          };
-          img.onerror = resolve;
-        });
-      }
+const fillEmpty = document.getElementById('fillSelect').value === 'yes';
+let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+if (fillEmpty) {
+  for (const type of cursorTypes) {
+    if (!drawings[type.id]) {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = cursorSize;
+      tempCanvas.height = cursorSize;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.fillStyle = '#ffffff';
+      tempCtx.fillRect(0, 0, cursorSize, cursorSize);
+      tempCtx.fillStyle = '#000000';
+      const s = cursorSize / 32;
+      tempCtx.beginPath();
+      tempCtx.moveTo(2*s, 2*s);
+      tempCtx.lineTo(2*s, 20*s);
+      tempCtx.lineTo(6*s, 15*s);
+      tempCtx.lineTo(10*s, 25*s);
+      tempCtx.lineTo(13*s, 23*s);
+      tempCtx.lineTo(9*s, 13*s);
+      tempCtx.lineTo(15*s, 13*s);
+      tempCtx.closePath();
+      tempCtx.fill();
+      drawings[type.id] = tempCtx.getImageData(0, 0, cursorSize, cursorSize);
     }
-    selectedTypes = cursorTypes.filter(type => drawings[type.id]);
   }
+  selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+}
   if (selectedTypes.length === 0) {
     alert('No cursors selected');
     return;
