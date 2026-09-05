@@ -464,15 +464,10 @@ zoomInBtn.addEventListener('click', () => {
 });
 
 zoomOutBtn.addEventListener('click', () => {
-  if (zoomLevel > 1) {
-    zoomLevel = Math.max(zoomLevel / 2, 1);
-    if (zoomLevel === 1) {
-      offsetX = 0;
-      offsetY = 0;
-    } else {
-      offsetX = offsetX / 2;
-      offsetY = offsetY / 2;
-    }
+  if (zoomLevel > 0.1) {
+    zoomLevel = Math.max(zoomLevel / 2, 0.1);
+    offsetX = offsetX / 2;
+    offsetY = offsetY / 2;
     updateCanvasDisplay();
     restoreImageData();
   }
