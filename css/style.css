@@ -16,11 +16,13 @@ body {
 body.dark {
   background: #1a1a1a;
   color: #e0e0e0;
+  --border-color: #fff;
 }
 
 body.light {
   background: #f5f5f5;
   color: #222;
+  --border-color: #000;
 }
 
 .theme-toggle {
@@ -212,19 +214,12 @@ main {
   padding: 4px;
   cursor: pointer;
   font-size: 1.2rem;
-  transition: border-color 0.3s;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .tool-btn.active {
-  border-color: #000;
-}
-
-body.light .tool-btn.active {
-  border-color: #000;
-}
-
-body.dark .tool-btn.active {
-  border-color: #fff;
+  border-color: var(--border-color);
+  background-color: var(--border-color);
 }
 
 button {

@@ -20,7 +20,8 @@ const startBtn = document.getElementById('startBtn');
 const logo = document.getElementById('logo');
 const pencilTool = document.getElementById('pencilTool');
 const fillTool = document.getElementById('fillTool');
-const zoomTool = document.getElementById('zoomTool');
+const zoomInBtn = document.getElementById('zoomInBtn');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -131,6 +132,7 @@ function drawDefaultCursorBackground() {
       break;
 
     case 'handwriting':
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(4*s, 20*s);
@@ -345,9 +347,6 @@ canvas.addEventListener('mousedown', (e) => {
     const { x, y } = getPixelCoords(e);
     const fillColor = hexToRgb(colorPicker.value);
     floodFill(x, y, fillColor);
-  } else if (currentTool === 'zoom') {
-    zoomLevel = zoomLevel === 1 ? 2 : 1;
-    setCanvasSize(cursorSize);
   }
 });
 
@@ -398,21 +397,22 @@ pencilTool.addEventListener('click', () => {
   currentTool = 'pencil';
   pencilTool.classList.add('active');
   fillTool.classList.remove('active');
-  zoomTool.classList.remove('active');
 });
 
 fillTool.addEventListener('click', () => {
   currentTool = 'fill';
   fillTool.classList.add('active');
   pencilTool.classList.remove('active');
-  zoomTool.classList.remove('active');
 });
 
-zoomTool.addEventListener('click', () => {
-  currentTool = 'zoom';
-  zoomTool.classList.add('active');
-  pencilTool.classList.remove('active');
-  fillTool.classList.remove('active');
+zoomInBtn.addEventListener('click', () => {
+  zoomLevel = Math.min(zoomLevel * 2, 8);
+  setCanvasSize(cursorSize);
+});
+
+zoomOutBtn.addEventListener('click', () => {
+  zoomLevel = Math.max(zoomLevel / 2, 1);
+  setCanvasSize(cursorSize);
 });
 
 function canvasToCur(imageData, width, height) {
