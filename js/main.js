@@ -44,7 +44,6 @@ let currentBrushSize = 1;
 let offsetX = 0;
 let offsetY = 0;
 let referenceData = null;
-let fillEmpty = false;
 
 backFromDownloadBtn.addEventListener('click', () => {
   currentTypeIndex = cursorTypes.length - 1;
@@ -648,34 +647,38 @@ function imageDataToPngBlob(imageData) {
 }
 
 downloadBtn.addEventListener('click', async () => {
-const fillEmpty = document.getElementById('fillSelect').value === 'yes';
-let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
-if (fillEmpty) {
-  for (const type of cursorTypes) {
-    if (!drawings[type.id]) {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = cursorSize;
-      tempCanvas.height = cursorSize;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.fillStyle = '#ffffff';
-      tempCtx.fillRect(0, 0, cursorSize, cursorSize);
-      tempCtx.fillStyle = '#000000';
-      const s = cursorSize / 32;
-      tempCtx.beginPath();
-      tempCtx.moveTo(2*s, 2*s);
-      tempCtx.lineTo(2*s, 20*s);
-      tempCtx.lineTo(6*s, 15*s);
-      tempCtx.lineTo(10*s, 25*s);
-      tempCtx.lineTo(13*s, 23*s);
-      tempCtx.lineTo(9*s, 13*s);
-      tempCtx.lineTo(15*s, 13*s);
-      tempCtx.closePath();
-      tempCtx.fill();
-      drawings[type.id] = tempCtx.getImageData(0, 0, cursorSize, cursorSize);
-    }
+  const fillEmpty = document.getElementById('fillSelect').value === 'yes';
+  let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
+  const zipDrawings = {};
+  for (const type of selectedTypes) {
+    zipDrawings[type.id] = drawings[type.id];
   }
-  selectedTypes = cursorTypes.filter(type => drawings[type.id]);
-}
+  if (fillEmpty) {
+    for (const type of cursorTypes) {
+      if (!zipDrawings[type.id]) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = cursorSize;
+        tempCanvas.height = cursorSize;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.fillStyle = '#ffffff';
+        tempCtx.fillRect(0, 0, cursorSize, cursorSize);
+        tempCtx.fillStyle = '#000000';
+        const s = cursorSize / 32;
+        tempCtx.beginPath();
+        tempCtx.moveTo(2*s, 2*s);
+        tempCtx.lineTo(2*s, 20*s);
+        tempCtx.lineTo(6*s, 15*s);
+        tempCtx.lineTo(10*s, 25*s);
+        tempCtx.lineTo(13*s, 23*s);
+        tempCtx.lineTo(9*s, 13*s);
+        tempCtx.lineTo(15*s, 13*s);
+        tempCtx.closePath();
+        tempCtx.fill();
+        zipDrawings[type.id] = tempCtx.getImageData(0, 0, cursorSize, cursorSize);
+      }
+    }
+    selectedTypes = cursorTypes.filter(type => zipDrawings[type.id]);
+  }
   if (selectedTypes.length === 0) {
     alert('No cursors selected');
     return;
@@ -685,10 +688,10 @@ if (fillEmpty) {
   const cursorsFolder = zip.folder('cursors');
   for (const type of selectedTypes) {
     if (os === 'macos') {
-      const pngBlob = await imageDataToPngBlob(drawings[type.id]);
+      const pngBlob = await imageDataToPngBlob(zipDrawings[type.id]);
       cursorsFolder.file(type.id + '.png', pngBlob);
     } else {
-      const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
+      const curBuffer = canvasToCur(zipDrawings[type.id], cursorSize, cursorSize);
       cursorsFolder.file(type.file, curBuffer);
     }
   }
