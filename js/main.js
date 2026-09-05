@@ -1,7 +1,5 @@
 const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
-const overlayCanvas = document.createElement('canvas');
-const overlayCtx = overlayCanvas.getContext('2d');
 const currentTypeSpan = document.getElementById('currentType');
 const sizeLabel = document.getElementById('sizeLabel');
 const colorPicker = document.getElementById('colorPicker');
@@ -27,7 +25,7 @@ const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
 const brushSize = document.getElementById('brushSize');
 const brushSizeLabel = document.getElementById('brushSizeLabel');
-const canvasContainer = document.getElementById('canvasContainer');
+const osSelect = document.getElementById('osSelect');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -39,14 +37,6 @@ let savedImageData = null;
 let currentBrushSize = 1;
 let offsetX = 0;
 let offsetY = 0;
-let isPanning = false;
-let panStartX = 0;
-let panStartY = 0;
-
-canvasContainer.appendChild(overlayCanvas);
-overlayCanvas.style.position = 'absolute';
-overlayCanvas.style.pointerEvents = 'none';
-overlayCanvas.style.display = 'none';
 
 function saveCurrentImageData() {
   savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -68,8 +58,6 @@ function setCanvasSize(size) {
   cursorSize = size;
   canvas.width = size;
   canvas.height = size;
-  overlayCanvas.width = size;
-  overlayCanvas.height = size;
   brushSize.max = size;
   brushSize.value = 1;
   currentBrushSize = 1;
@@ -304,6 +292,7 @@ function loadType(index) {
   if (index >= cursorTypes.length) {
     stepButtons.classList.add('hidden');
     downloadBtn.classList.remove('hidden');
+    osSelect.classList.remove('hidden');
     currentTypeSpan.textContent = 'Done!';
     return;
   }
@@ -312,6 +301,7 @@ function loadType(index) {
   initCanvas();
   stepButtons.classList.remove('hidden');
   downloadBtn.classList.add('hidden');
+  osSelect.classList.add('hidden');
   backBtn.classList.remove('hidden');
 }
 
@@ -429,6 +419,10 @@ backBtn.addEventListener('click', () => {
   } else {
     currentTypeIndex--;
     loadType(currentTypeIndex);
+    if (drawings[cursorTypes[currentTypeIndex].id]) {
+      ctx.putImageData(drawings[cursorTypes[currentTypeIndex].id], 0, 0);
+      saveCurrentImageData();
+    }
   }
 });
 
@@ -554,27 +548,37 @@ downloadBtn.addEventListener('click', async () => {
     alert('No cursors selected');
     return;
   }
+  const os = osSelect.value;
   const zip = new JSZip();
   const cursorsFolder = zip.folder('cursors');
   for (const type of selectedTypes) {
     const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
     cursorsFolder.file(type.file, curBuffer);
   }
-  const installInf = generateInstallInf(selectedTypes);
-  zip.file('install.inf', installInf);
-  zip.file('install.bat', generateInstallBat());
-  try {
-    const response = await fetch('README.md');
-    if (response.ok) {
-      const readmeText = await response.text();
-      zip.file('README.md', readmeText);
-    }
-  } catch (e) {}
+  if (os === 'windows') {
+    const installInf = generateInstallInf(selectedTypes);
+    zip.file('install.inf', installInf);
+    zip.file('install.bat', generateInstallBat());
+  } else if (os === 'linux') {
+    let linuxReadme = '# Linux Cursor Installation\n\n';
+    linuxReadme += '1. Extract this ZIP\n';
+    linuxReadme += '2. Copy cursors folder to ~/.icons/LucCursor\n';
+    linuxReadme += '3. Open Settings > Appearance > Cursors\n';
+    linuxReadme += '4. Select LucCursor\n';
+    zip.file('README.md', linuxReadme);
+  } else if (os === 'macos') {
+    let macReadme = '# macOS Cursor Installation\n\n';
+    macReadme += '1. Extract this ZIP\n';
+    macReadme += '2. Open System Settings > Accessibility > Display > Pointer\n';
+    macReadme += '3. Click the color well and choose Custom\n';
+    macReadme += '4. Select the .cur files from the cursors folder\n';
+    zip.file('README.md', macReadme);
+  }
   const blob = await zip.generateAsync({type: 'blob'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'LucCursor.zip';
+  a.download = 'LucCursor-' + os + '.zip';
   a.click();
   URL.revokeObjectURL(url);
 });
