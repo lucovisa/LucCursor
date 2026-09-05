@@ -1,6 +1,7 @@
 const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
 const currentTypeSpan = document.getElementById('currentType');
+const sizeLabel = document.getElementById('sizeLabel');
 const colorPicker = document.getElementById('colorPicker');
 const clearBtn = document.getElementById('clearBtn');
 const backBtn = document.getElementById('backBtn');
@@ -12,27 +13,249 @@ const donateBtn = document.getElementById('donateBtn');
 const donateMenu = document.getElementById('donateMenu');
 const themeToggle = document.getElementById('themeToggle');
 const copyBtns = document.querySelectorAll('.copy-btn');
+const startScreen = document.getElementById('startScreen');
+const editor = document.getElementById('editor');
+const sizeSelect = document.getElementById('sizeSelect');
+const startBtn = document.getElementById('startBtn');
+const logo = document.getElementById('logo');
 
 let drawings = {};
 let currentTypeIndex = 0;
 let isDrawn = false;
+let cursorSize = 32;
+
+function setCanvasSize(size) {
+  cursorSize = size;
+  canvas.width = size;
+  canvas.height = size;
+  canvas.style.width = size * 16 + 'px';
+  canvas.style.height = size * 16 + 'px';
+  sizeLabel.textContent = 'Size: ' + size + '×' + size;
+}
 
 function drawDefaultCursorBackground() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const currentType = cursorTypes[currentTypeIndex];
+  const s = canvas.width / 32;
   ctx.save();
-  ctx.globalAlpha = 0.2;
+  ctx.globalAlpha = 0.3;
   ctx.fillStyle = '#000000';
-  ctx.beginPath();
-  ctx.moveTo(2, 2);
-  ctx.lineTo(2, 20);
-  ctx.lineTo(6, 15);
-  ctx.lineTo(10, 25);
-  ctx.lineTo(13, 23);
-  ctx.lineTo(9, 13);
-  ctx.lineTo(15, 13);
-  ctx.closePath();
-  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+
+  switch(currentType.id) {
+    case 'normal':
+    case 'precision':
+    case 'altselect':
+      ctx.beginPath();
+      ctx.moveTo(2*s, 2*s);
+      ctx.lineTo(2*s, 20*s);
+      ctx.lineTo(6*s, 15*s);
+      ctx.lineTo(10*s, 25*s);
+      ctx.lineTo(13*s, 23*s);
+      ctx.lineTo(9*s, 13*s);
+      ctx.lineTo(15*s, 13*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'help':
+      ctx.beginPath();
+      ctx.moveTo(2*s, 2*s);
+      ctx.lineTo(2*s, 20*s);
+      ctx.lineTo(6*s, 15*s);
+      ctx.lineTo(10*s, 25*s);
+      ctx.lineTo(13*s, 23*s);
+      ctx.lineTo(9*s, 13*s);
+      ctx.lineTo(15*s, 13*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.font = (9*s) + 'px Arial';
+      ctx.fillText('?', 17*s, 17*s);
+      break;
+
+    case 'background':
+      ctx.beginPath();
+      ctx.moveTo(2*s, 2*s);
+      ctx.lineTo(2*s, 20*s);
+      ctx.lineTo(6*s, 15*s);
+      ctx.lineTo(10*s, 25*s);
+      ctx.lineTo(13*s, 23*s);
+      ctx.lineTo(9*s, 13*s);
+      ctx.lineTo(15*s, 13*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(20*s, 20*s, 6*s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'busy':
+      ctx.beginPath();
+      ctx.arc(16*s, 16*s, 6*s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(22*s, 16*s, 6*s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'text':
+      ctx.beginPath();
+      ctx.moveTo(4*s, 4*s);
+      ctx.lineTo(4*s, 22*s);
+      ctx.lineTo(8*s, 22*s);
+      ctx.lineTo(8*s, 14*s);
+      ctx.lineTo(18*s, 14*s);
+      ctx.lineTo(18*s, 22*s);
+      ctx.lineTo(22*s, 22*s);
+      ctx.lineTo(22*s, 4*s);
+      ctx.lineTo(18*s, 4*s);
+      ctx.lineTo(18*s, 10*s);
+      ctx.lineTo(8*s, 10*s);
+      ctx.lineTo(8*s, 4*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'handwriting':
+      ctx.beginPath();
+      ctx.moveTo(4*s, 20*s);
+      ctx.lineTo(8*s, 8*s);
+      ctx.lineTo(12*s, 22*s);
+      ctx.lineTo(16*s, 6*s);
+      ctx.lineTo(20*s, 20*s);
+      ctx.stroke();
+      break;
+
+    case 'unavailable':
+      ctx.beginPath();
+      ctx.arc(16*s, 16*s, 8*s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(6*s, 26*s);
+      ctx.lineTo(26*s, 6*s);
+      ctx.stroke();
+      break;
+
+    case 'vresize':
+      ctx.beginPath();
+      ctx.moveTo(16*s, 4*s);
+      ctx.lineTo(10*s, 10*s);
+      ctx.lineTo(14*s, 10*s);
+      ctx.lineTo(14*s, 22*s);
+      ctx.lineTo(10*s, 22*s);
+      ctx.lineTo(16*s, 28*s);
+      ctx.lineTo(22*s, 22*s);
+      ctx.lineTo(18*s, 22*s);
+      ctx.lineTo(18*s, 10*s);
+      ctx.lineTo(22*s, 10*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'hresize':
+      ctx.beginPath();
+      ctx.moveTo(4*s, 16*s);
+      ctx.lineTo(10*s, 10*s);
+      ctx.lineTo(10*s, 14*s);
+      ctx.lineTo(22*s, 14*s);
+      ctx.lineTo(22*s, 10*s);
+      ctx.lineTo(28*s, 16*s);
+      ctx.lineTo(22*s, 22*s);
+      ctx.lineTo(22*s, 18*s);
+      ctx.lineTo(10*s, 18*s);
+      ctx.lineTo(10*s, 22*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'dresize1':
+      ctx.beginPath();
+      ctx.moveTo(4*s, 4*s);
+      ctx.lineTo(10*s, 4*s);
+      ctx.lineTo(10*s, 8*s);
+      ctx.lineTo(24*s, 22*s);
+      ctx.lineTo(28*s, 22*s);
+      ctx.lineTo(28*s, 28*s);
+      ctx.lineTo(22*s, 28*s);
+      ctx.lineTo(22*s, 24*s);
+      ctx.lineTo(8*s, 10*s);
+      ctx.lineTo(4*s, 10*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'dresize2':
+      ctx.beginPath();
+      ctx.moveTo(28*s, 4*s);
+      ctx.lineTo(22*s, 4*s);
+      ctx.lineTo(22*s, 8*s);
+      ctx.lineTo(8*s, 22*s);
+      ctx.lineTo(4*s, 22*s);
+      ctx.lineTo(4*s, 28*s);
+      ctx.lineTo(10*s, 28*s);
+      ctx.lineTo(10*s, 24*s);
+      ctx.lineTo(24*s, 10*s);
+      ctx.lineTo(28*s, 10*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'move':
+      ctx.beginPath();
+      ctx.moveTo(16*s, 2*s);
+      ctx.lineTo(10*s, 8*s);
+      ctx.lineTo(14*s, 8*s);
+      ctx.lineTo(14*s, 24*s);
+      ctx.lineTo(10*s, 24*s);
+      ctx.lineTo(16*s, 30*s);
+      ctx.lineTo(22*s, 24*s);
+      ctx.lineTo(18*s, 24*s);
+      ctx.lineTo(18*s, 8*s);
+      ctx.lineTo(22*s, 8*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'link':
+      ctx.beginPath();
+      ctx.moveTo(10*s, 4*s);
+      ctx.lineTo(6*s, 4*s);
+      ctx.lineTo(6*s, 20*s);
+      ctx.lineTo(16*s, 20*s);
+      ctx.lineTo(16*s, 16*s);
+      ctx.lineTo(12*s, 16*s);
+      ctx.lineTo(12*s, 22*s);
+      ctx.lineTo(8*s, 22*s);
+      ctx.lineTo(8*s, 6*s);
+      ctx.lineTo(12*s, 6*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(14*s, 4*s);
+      ctx.lineTo(18*s, 4*s);
+      ctx.lineTo(18*s, 12*s);
+      ctx.lineTo(14*s, 12*s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+  }
   ctx.restore();
 }
 
@@ -118,8 +341,9 @@ continueBtn.addEventListener('click', () => {
   nextType();
 });
 
-function canvasToCur(imageData) {
-  const w = 32, h = 32;
+function canvasToCur(imageData, width, height) {
+  const w = width;
+  const h = height;
   const buffer = new ArrayBuffer(6 + 16 + 40 + w*h*4 + w*h/8);
   const dv = new DataView(buffer);
 
@@ -202,7 +426,7 @@ downloadBtn.addEventListener('click', async () => {
   const cursorsFolder = zip.folder('cursors');
   
   for (const type of selectedTypes) {
-    const curBuffer = canvasToCur(drawings[type.id]);
+    const curBuffer = canvasToCur(drawings[type.id], cursorSize, cursorSize);
     cursorsFolder.file(type.file, curBuffer);
   }
   
@@ -238,9 +462,9 @@ themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
   if (document.body.classList.contains('dark')) {
-    icon.textContent = '🌙';
-  } else {
     icon.textContent = '☀️';
+  } else {
+    icon.textContent = '🌙';
   }
 });
 
@@ -254,4 +478,16 @@ copyBtns.forEach(btn => {
   });
 });
 
-loadType(0);
+startBtn.addEventListener('click', () => {
+  cursorSize = parseInt(sizeSelect.value);
+  setCanvasSize(cursorSize);
+  startScreen.classList.add('hidden');
+  editor.classList.remove('hidden');
+  loadType(0);
+});
+
+logo.addEventListener('click', () => {
+  window.open('https://github.com/lucovisa', '_blank');
+});
+
+setCanvasSize(32);

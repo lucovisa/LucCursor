@@ -42,12 +42,25 @@
   </div>
 
   <header>
-    <h1>LucCursor</h1>
+    <h1 id="logo">LucCursor</h1>
     <p>Draw your own Windows cursors</p>
   </header>
 
   <main>
-    <section class="editor">
+    <div id="startScreen" class="start-screen">
+      <h2>Select cursor size</h2>
+      <select id="sizeSelect">
+        <option value="16">16×16</option>
+        <option value="32" selected>32×32</option>
+        <option value="48">48×48</option>
+        <option value="64">64×64</option>
+        <option value="128">128×128</option>
+        <option value="256">256×256</option>
+      </select>
+      <button id="startBtn">Start</button>
+    </div>
+
+    <section id="editor" class="editor hidden">
       <div class="toolbar">
         <button id="clearBtn">Clear</button>
         <input type="color" id="colorPicker" value="#000000">
@@ -56,7 +69,7 @@
         <canvas id="pixelCanvas" width="32" height="32"></canvas>
       </div>
       <div class="info">
-        <span>Size: 32×32</span>
+        <span id="sizeLabel">Size: 32×32</span>
         <span id="currentType"></span>
       </div>
       <div id="stepButtons" class="step-buttons">

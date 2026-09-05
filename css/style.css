@@ -38,11 +38,7 @@ body.light {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.theme-toggle:hover {
-  transform: rotate(15deg);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .donate-btn {
@@ -50,7 +46,7 @@ body.light {
   top: 15px;
   left: 20px;
   z-index: 100;
-  background: #e74c3c;
+  background: #3a6ea5;
   color: #fff;
   border: none;
   border-radius: 0;
@@ -58,7 +54,7 @@ body.light {
   cursor: pointer;
   font-size: 0.9rem;
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+  transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -66,9 +62,9 @@ body.light {
 }
 
 .donate-btn:hover {
-  background: #c0392b;
-  box-shadow: 0 4px 12px rgba(231,76,60,0.5);
+  background: #2d5a8a;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(58,110,165,0.5);
 }
 
 .donate-menu {
@@ -83,14 +79,14 @@ body.light {
   width: 320px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateY(-20px);
   pointer-events: none;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .donate-menu.show {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(0);
   pointer-events: all;
 }
 
@@ -107,11 +103,11 @@ body.light {
   padding: 12px;
   border: 1px solid rgba(128,128,128,0.3);
   border-radius: 0;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s;
 }
 
 .wallet:hover {
-  border-color: #e74c3c;
+  border-color: #3a6ea5;
 }
 
 .wallet span:first-child {
@@ -136,7 +132,7 @@ body.light {
   padding: 6px 14px;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.3s ease;
+  transition: background 0.3s;
 }
 
 .copy-btn:hover {
@@ -149,12 +145,37 @@ header {
   border-bottom: 1px solid currentColor;
 }
 
+#logo {
+  cursor: pointer;
+  display: inline-block;
+}
+
+#logo:hover {
+  text-decoration: underline;
+}
+
 main {
   display: flex;
   flex: 1;
   justify-content: center;
   align-items: center;
   padding: 2rem;
+}
+
+.start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.start-screen select {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
 }
 
 .editor {
@@ -178,7 +199,7 @@ button {
   border-radius: 0;
   cursor: pointer;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: background 0.3s, transform 0.3s;
 }
 
 button:hover {
@@ -208,10 +229,9 @@ input[type="color"] {
 }
 
 #pixelCanvas {
-  width: 512px;
-  height: 512px;
   image-rendering: pixelated;
   cursor: crosshair;
+  display: block;
 }
 
 .info {
