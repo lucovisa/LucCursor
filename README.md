@@ -1,5 +1,3 @@
-# LucCursor
-
 ## How to Install
 
 1. Download the ZIP file from the website
