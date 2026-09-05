@@ -22,6 +22,7 @@ const pencilTool = document.getElementById('pencilTool');
 const fillTool = document.getElementById('fillTool');
 const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
+const canvasContainer = document.getElementById('canvasContainer');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -410,12 +411,12 @@ fillTool.addEventListener('click', () => {
 });
 
 zoomInBtn.addEventListener('click', () => {
-  zoomLevel = Math.min(zoomLevel * 2, 8);
+  zoomLevel *= 2;
   updateCanvasDisplay();
 });
 
 zoomOutBtn.addEventListener('click', () => {
-  zoomLevel = Math.max(zoomLevel / 2, 1);
+  zoomLevel /= 2;
   updateCanvasDisplay();
 });
 

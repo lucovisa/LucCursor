@@ -252,11 +252,14 @@ input[type="color"] {
   cursor: pointer;
 }
 
-.canvas-wrapper {
+.canvas-container {
   background: #fff;
   padding: 1px;
   border: 1px solid #555;
   image-rendering: pixelated;
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow: auto;
 }
 
 #pixelCanvas {
