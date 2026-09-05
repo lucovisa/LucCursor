@@ -296,9 +296,16 @@ function loadType(index) {
   if (index >= cursorTypes.length) {
     stepButtons.classList.add('hidden');
     downloadSection.classList.remove('hidden');
-    currentTypeSpan.textContent = 'Done!';
+    currentTypeSpan.textContent = '';
+    sizeLabel.textContent = '';
+    canvasContainer.classList.add('hidden');
+    document.querySelector('.toolbar').classList.add('hidden');
+    document.querySelector('.info').classList.add('hidden');
     return;
   }
+  canvasContainer.classList.remove('hidden');
+  document.querySelector('.toolbar').classList.remove('hidden');
+  document.querySelector('.info').classList.remove('hidden');
   const type = cursorTypes[index];
   currentTypeSpan.textContent = type.name;
   initCanvas();
@@ -578,6 +585,21 @@ function generateInstallBat() {
   return bat;
 }
 
+function generateLinuxTheme() {
+  let theme = `[Icon Theme]\nName=LucCursor\nComment=Custom cursors\nInherits=default\n`;
+  return theme;
+}
+
+function generateLinuxInstallSh() {
+  let sh = `#!/bin/bash\n`;
+  sh += `mkdir -p ~/.icons/LucCursor/cursors\n`;
+  sh += `cp cursors/* ~/.icons/LucCursor/cursors/\n`;
+  sh += `cp index.theme ~/.icons/LucCursor/\n`;
+  sh += `gsettings set org.gnome.desktop.interface cursor-theme "LucCursor"\n`;
+  sh += `echo "Cursors installed!"\n`;
+  return sh;
+}
+
 downloadBtn.addEventListener('click', async () => {
   const selectedTypes = cursorTypes.filter(type => drawings[type.id]);
   if (selectedTypes.length === 0) {
@@ -595,19 +617,15 @@ downloadBtn.addEventListener('click', async () => {
     const installInf = generateInstallInf(selectedTypes);
     zip.file('install.inf', installInf);
     zip.file('install.bat', generateInstallBat());
+    const winReadme = `# Windows Installation\n\n1. Extract this ZIP\n2. Double-click install.bat\n3. Click Yes when Windows asks\n4. Done\n`;
+    zip.file('README.md', winReadme);
   } else if (os === 'linux') {
-    let linuxReadme = '# Linux Cursor Installation\n\n';
-    linuxReadme += '1. Extract this ZIP\n';
-    linuxReadme += '2. Copy cursors folder to ~/.icons/LucCursor\n';
-    linuxReadme += '3. Open Settings > Appearance > Cursors\n';
-    linuxReadme += '4. Select LucCursor\n';
+    zip.file('index.theme', generateLinuxTheme());
+    zip.file('install.sh', generateLinuxInstallSh());
+    const linuxReadme = `# Linux Installation\n\n1. Extract this ZIP\n2. Run: chmod +x install.sh && ./install.sh\n3. Or manually copy cursors folder to ~/.icons/LucCursor\n4. Select LucCursor in Settings > Appearance > Cursors\n`;
     zip.file('README.md', linuxReadme);
   } else if (os === 'macos') {
-    let macReadme = '# macOS Cursor Installation\n\n';
-    macReadme += '1. Extract this ZIP\n';
-    macReadme += '2. Open System Settings > Accessibility > Display > Pointer\n';
-    macReadme += '3. Click the color well and choose Custom\n';
-    macReadme += '4. Select the .cur files from the cursors folder\n';
+    const macReadme = `# macOS Installation\n\n1. Extract this ZIP\n2. Copy cursors folder to /Library/Cursors\n3. Open System Settings > Accessibility > Display > Pointer\n4. Click the color well and choose Custom\n5. Select the .cur files from the cursors folder\n`;
     zip.file('README.md', macReadme);
   }
   const blob = await zip.generateAsync({type: 'blob'});
