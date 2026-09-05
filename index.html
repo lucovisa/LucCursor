@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LucCursor</title>
+  <meta name="description" content="Create custom Windows cursors right in your browser. Draw pixel-art cursors and export as installable pack.">
+  <link rel="icon" href="assets/icons/favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LucCursor">
+  <meta property="og:description" content="Create custom Windows cursors right in your browser.">
+  <meta property="og:image" content="https://lucovisa.github.io/luccursor/assets/gallery/preview.png">
+  <meta property="og:url" content="https://lucovisa.github.io/luccursor/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LucCursor">
+  <meta name="twitter:description" content="Create custom Windows cursors right in your browser.">
+  <meta name="twitter:image" content="https://lucovisa.github.io/luccursor/assets/gallery/preview.png">
+</head>
+<body>
+  <header>
+    <h1>LucCursor</h1>
+    <p>Draw your own Windows cursors</p>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <h2>Cursor types</h2>
+      <ul id="cursorList"></ul>
+    </aside>
+
+    <section class="editor">
+      <div class="toolbar">
+        <button id="clearBtn">Clear</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <button id="downloadBtn">Download ZIP</button>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="pixelCanvas" width="32" height="32"></canvas>
+      </div>
+      <div class="info">
+        <span>Size: 32×32</span>
+        <span id="currentType"></span>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/cursor-types.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
