@@ -30,12 +30,16 @@ let cursorSize = 32;
 let currentTool = 'pencil';
 let zoomLevel = 1;
 
+function updateCanvasDisplay() {
+  canvas.style.width = cursorSize * 16 * zoomLevel + 'px';
+  canvas.style.height = cursorSize * 16 * zoomLevel + 'px';
+}
+
 function setCanvasSize(size) {
   cursorSize = size;
   canvas.width = size;
   canvas.height = size;
-  canvas.style.width = size * 16 * zoomLevel + 'px';
-  canvas.style.height = size * 16 * zoomLevel + 'px';
+  updateCanvasDisplay();
   sizeLabel.textContent = 'Size: ' + size + '×' + size;
 }
 
@@ -407,12 +411,12 @@ fillTool.addEventListener('click', () => {
 
 zoomInBtn.addEventListener('click', () => {
   zoomLevel = Math.min(zoomLevel * 2, 8);
-  setCanvasSize(cursorSize);
+  updateCanvasDisplay();
 });
 
 zoomOutBtn.addEventListener('click', () => {
   zoomLevel = Math.max(zoomLevel / 2, 1);
-  setCanvasSize(cursorSize);
+  updateCanvasDisplay();
 });
 
 function canvasToCur(imageData, width, height) {
@@ -536,9 +540,9 @@ themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
   const icon = themeToggle.querySelector('.icon');
   if (document.body.classList.contains('dark')) {
-    icon.textContent = '🌙';
-  } else {
     icon.textContent = '☀️';
+  } else {
+    icon.textContent = '🌙';
   }
 });
 
