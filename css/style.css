@@ -292,7 +292,7 @@ body.light .info {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .clickable {
