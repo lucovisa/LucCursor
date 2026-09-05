@@ -1,5 +1,7 @@
 const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
+const overlayCanvas = document.createElement('canvas');
+const overlayCtx = overlayCanvas.getContext('2d');
 const currentTypeSpan = document.getElementById('currentType');
 const sizeLabel = document.getElementById('sizeLabel');
 const colorPicker = document.getElementById('colorPicker');
@@ -25,6 +27,7 @@ const zoomInBtn = document.getElementById('zoomInBtn');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
 const brushSize = document.getElementById('brushSize');
 const brushSizeLabel = document.getElementById('brushSizeLabel');
+const canvasContainer = document.getElementById('canvasContainer');
 
 let drawings = {};
 let currentTypeIndex = 0;
@@ -34,6 +37,16 @@ let currentTool = 'pencil';
 let zoomLevel = 1;
 let savedImageData = null;
 let currentBrushSize = 1;
+let offsetX = 0;
+let offsetY = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+
+canvasContainer.appendChild(overlayCanvas);
+overlayCanvas.style.position = 'absolute';
+overlayCanvas.style.pointerEvents = 'none';
+overlayCanvas.style.display = 'none';
 
 function saveCurrentImageData() {
   savedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -48,13 +61,19 @@ function restoreImageData() {
 function updateCanvasDisplay() {
   canvas.style.width = cursorSize * 16 * zoomLevel + 'px';
   canvas.style.height = cursorSize * 16 * zoomLevel + 'px';
+  canvas.style.transform = 'translate(' + offsetX + 'px, ' + offsetY + 'px)';
 }
 
 function setCanvasSize(size) {
   cursorSize = size;
   canvas.width = size;
   canvas.height = size;
+  overlayCanvas.width = size;
+  overlayCanvas.height = size;
   brushSize.max = size;
+  brushSize.value = 1;
+  currentBrushSize = 1;
+  brushSizeLabel.textContent = '1';
   updateCanvasDisplay();
   sizeLabel.textContent = 'Size: ' + size + '×' + size;
 }
@@ -69,7 +88,6 @@ function drawDefaultCursorBackground() {
   ctx.fillStyle = '#000000';
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 1;
-
   switch(currentType.id) {
     case 'normal':
     case 'precision':
@@ -360,6 +378,17 @@ function drawBrush(x, y) {
 }
 
 canvas.addEventListener('mousedown', (e) => {
+  if (currentTool === 'zoomin') {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    offsetX = offsetX - (mouseX - rect.width / 2) * zoomLevel;
+    offsetY = offsetY - (mouseY - rect.height / 2) * zoomLevel;
+    zoomLevel *= 2;
+    updateCanvasDisplay();
+    restoreImageData();
+    return;
+  }
   if (currentTool === 'pencil' || currentTool === 'eraser') {
     const { x, y } = getPixelCoords(e);
     drawBrush(x, y);
@@ -367,10 +396,6 @@ canvas.addEventListener('mousedown', (e) => {
     const { x, y } = getPixelCoords(e);
     const fillColor = hexToRgb(colorPicker.value);
     floodFill(x, y, fillColor);
-  } else if (currentTool === 'zoomin') {
-    zoomLevel *= 2;
-    updateCanvasDisplay();
-    restoreImageData();
   }
 });
 
@@ -439,9 +464,18 @@ zoomInBtn.addEventListener('click', () => {
 });
 
 zoomOutBtn.addEventListener('click', () => {
-  zoomLevel = Math.max(zoomLevel / 2, 0.5);
-  updateCanvasDisplay();
-  restoreImageData();
+  if (zoomLevel > 1) {
+    zoomLevel = Math.max(zoomLevel / 2, 1);
+    if (zoomLevel === 1) {
+      offsetX = 0;
+      offsetY = 0;
+    } else {
+      offsetX = offsetX / 2;
+      offsetY = offsetY / 2;
+    }
+    updateCanvasDisplay();
+    restoreImageData();
+  }
 });
 
 brushSize.addEventListener('input', () => {
@@ -578,6 +612,8 @@ copyBtns.forEach(btn => {
 startBtn.addEventListener('click', () => {
   cursorSize = parseInt(sizeSelect.value);
   zoomLevel = 1;
+  offsetX = 0;
+  offsetY = 0;
   setCanvasSize(cursorSize);
   startScreen.classList.add('hidden');
   editor.classList.remove('hidden');
