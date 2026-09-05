@@ -4,17 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Draw Cursor Online</title>
-  <meta name="description" content="Draw cursor online free without registration and SMS">
+  <meta name="description" content="On this site you can create your own custom cursor for any OS: Windows, Linux or macOS. Upload, save and use. No registration and completely free.">
   <link rel="icon" href="assets/icons/favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Draw Cursor Online">
-  <meta property="og:description" content="Draw cursor online free without registration and SMS">
+  <meta property="og:description" content="On this site you can create your own custom cursor for any OS: Windows, Linux or macOS. Upload, save and use. No registration and completely free.">
   <meta property="og:image" content="https://lucovisa.github.io/luccursor/assets/gallery/preview.png">
   <meta property="og:url" content="https://lucovisa.github.io/luccursor/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Draw Cursor Online">
-  <meta name="twitter:description" content="Draw cursor online free without registration and SMS">
+  <meta name="twitter:description" content="On this site you can create your own custom cursor for any OS: Windows, Linux or macOS. Upload, save and use. No registration and completely free.">
   <meta name="twitter:image" content="https://lucovisa.github.io/luccursor/assets/gallery/preview.png">
 </head>
 <body class="dark">
@@ -43,7 +43,7 @@
 
   <header>
     <h1 id="logo">LucCursor</h1>
-    <p id="subtitle">Draw your own Windows cursors</p>
+    <p id="subtitle" class="clickable">Draw your own Windows cursors</p>
   </header>
 
   <main>
@@ -95,8 +95,10 @@
       </div>
       <div id="downloadSection" class="hidden">
         <p id="fillQuestion">Fill empty files with default images?</p>
-        <button id="fillYesBtn">Yes</button>
-        <button id="fillNoBtn">No</button>
+        <select id="fillSelect">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
         <button id="backFromDownloadBtn">Back</button>
         <select id="osSelect">
           <option value="windows">Windows</option>

@@ -662,6 +662,7 @@ function imageDataToPngBlob(imageData) {
 }
 
 downloadBtn.addEventListener('click', async () => {
+  const fillEmpty = document.getElementById('fillSelect').value === 'yes';
   let selectedTypes = cursorTypes.filter(type => drawings[type.id]);
   if (fillEmpty) {
     for (const type of cursorTypes) {
